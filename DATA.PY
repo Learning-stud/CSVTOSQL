@@ -25,7 +25,6 @@ cursor = conn.cursor()
 # Define the MySQL table schema
 create_table_query = """
 CREATE TABLE IF NOT EXISTS Ratings (
-    id INT AUTO_INCREMENT PRIMARY KEY,
     issuer VARCHAR(255),
     sub_type VARCHAR(255),
     instrument_type VARCHAR(255),

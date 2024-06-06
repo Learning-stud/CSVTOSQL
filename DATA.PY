@@ -1,12 +1,3 @@
-
-
-# Connect to MySQL database
-# mydb = mysql.connector.connect(
-#   host="127.0.0.1",
-#   user="root",
-#   password="jaygajjar",
-#   database="RatingsDB"
-# )
 import pandas as pd
 import mysql.connector
 
@@ -25,27 +16,25 @@ cursor = conn.cursor()
 # Define the MySQL table schema
 create_table_query = """
 CREATE TABLE IF NOT EXISTS Ratings (
-    issuer VARCHAR(255),
-    sub_type VARCHAR(255),
-    instrument_type VARCHAR(255),
-    amount DECIMAL(15, 2),
-    rating VARCHAR(50),
-    industry_name VARCHAR(255),
-    basic_industry VARCHAR(255)
+    NAME_OF_ISSUER VARCHAR(255),
+    INSTRUMENT_TYPE VARCHAR(255),
+    AMOUNT DECIMAL(15, 2),
+    RATING VARCHAR(50),
+    INDUSTRY_NAME VARCHAR(255),
+    NSEINDUSTRY VARCHAR(255)
 )
 """
 cursor.execute(create_table_query)
 
 # Insert data into MySQL table
-# Insert data into MySQL table
 for index, row in df.iterrows():
     insert_query = """
-    INSERT INTO Ratings (issuer, sub_type, instrument_type, amount, rating, industry_name, basic_industry)
-    VALUES (%s, %s, %s, %s, %s, %s, %s)
+    INSERT INTO Ratings (NAME_OF_ISSUER,  INSTRUMENT_TYPE, AMOUNT, RATING, INDUSTRY_NAME, NSEINDUSTRY)
+    VALUES (%s, %s, %s, %s, %s, %s)
     """
-    cursor.execute(insert_query, tuple(row))
+    # Ignore the first column 'NAME_OF_ISSUER' while inserting data into MySQL
+    cursor.execute(insert_query, tuple(row[1:]))
     conn.commit()
-
 
 # Close connection
 cursor.close()

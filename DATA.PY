@@ -1,30 +1,44 @@
-import fitz  # PyMuPDF
-import csv
+import PyPDF2
+import json
 
-# Open the PDF file
-pdf_document = "1-300.pdf"
-document = fitz.open(pdf_document)
+def pdf_to_json(pdf_path):
+    # Open the PDF file
+    with open(pdf_path, 'rb') as file:
+        # Create a PDF reader object
+        reader = PyPDF2.PdfReader(file)
 
-# Prepare a CSV file to write the data
-csv_file = "extracted_data.csv"
-csv_columns = ["Name of Issuer", "Sub Type", "Instrument Type", "Amount (Rs.Mn)", "Rating", "Industry Name", "Basic Industry"]
+        # Initialize an empty list to store extracted data
+        data = []
 
-with open(csv_file, 'w', newline='') as file:
-    writer = csv.writer(file)
-    writer.writerow(csv_columns)
+        # Loop through each page in the PDF
+        for page_num in range(len(reader.pages)):
+            # Extract text from the page
+            page = reader.pages[page_num]
+            text = page.extract_text()
 
-    for page_num in range(len(document)):
-        page = document.load_page(page_num)
-        text = page.get_text("text")
+            # Process the extracted text (you may need to customize this part)
+            # For example, split the text into lines and store in a dictionary
+            page_data = {
+                "page_number": page_num + 1,
+                "text": text.strip()  # Remove leading/trailing whitespace
+            }
 
-        # Split the text into lines
-        lines = text.split('\n')
+            # Append page data to the list
+            data.append(page_data)
 
-        # Process lines to extract the required data
-        for line in lines:
-            # Sample processing (exact processing will depend on the PDF structure)
-            if line.strip() and len(line.split()) > 6:
-                data = line.split()
-                writer.writerow(data[:7])
+    # Convert the extracted data to JSON
+    json_data = json.dumps(data, indent=4)
 
-print("Data extraction to CSV completed.")
+    return json_data
+
+# Provide the path to your PDF file
+pdf_path = 'pdffile.pdf'
+
+# Convert PDF to JSON
+json_data = pdf_to_json(pdf_path)
+
+# Save JSON data to a file
+with open('outputdata.json', 'w') as json_file:
+    json_file.write(json_data)
+
+print("PDF data has been successfully converted to JSON.")

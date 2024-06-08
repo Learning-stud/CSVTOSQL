@@ -386,10 +386,108 @@
 
 # print("Data inserted successfully")
 
+# import fitz  # PyMuPDF
+# import pandas as pd
+# import re
+# import mysql.connector
+
+# # Open the PDF file
+# pdf_document = "pdffile.pdf"
+# document = fitz.open(pdf_document)
+
+# # Function to extract text from the PDF
+# def extract_text_from_first_page(doc):
+#     page = doc.load_page(0)  # Loads the first page
+#     text = page.get_text("text")
+#     return text
+
+# # Extract text from the first page
+# pdf_text = extract_text_from_first_page(document)
+# print("Extracted text from PDF:", pdf_text)
+
+# # Extract the tabular data using regular expressions
+# def extract_table_data(text):
+#     pattern = re.compile(r"(\d+.*\n)+")
+#     matches = pattern.findall(text)
+#     print("Matches found:", matches)
+#     data = [match.split() for match in matches]
+#     return data
+
+# # Process the extracted text
+# data = extract_table_data(pdf_text)
+# print("Processed data:", data)
+
+# # Convert the processed data into a DataFrame
+# columns = ["Name of Issuer", "Subtype Instrument Type", "Amount (Rs.Mn)", "Rating", "Industry Name", "Basic Industry"]
+# df = pd.DataFrame(data, columns=columns)
+# print("DataFrame:")
+# print(df.head())
+
+# # Remove any rows where 'Amount (Rs.Mn)' is not a numeric value
+# df = df[pd.to_numeric(df['Amount (Rs.Mn)'], errors='coerce').notnull()]
+
+# # Convert 'Amount (Rs.Mn)' to numeric
+# df['Amount (Rs.Mn)'] = pd.to_numeric(df['Amount (Rs.Mn)'])
+
+# # MySQL database connection details
+# db_config = {
+#     'user': 'root',
+#     'password': 'jaygajjar',
+#     'host': '127.0.0.1',
+#     'raise_on_warnings': True
+# }
+
+# # Establishing a connection to the database
+# connection = mysql.connector.connect(**db_config)
+# cursor = connection.cursor()
+
+# # Drop the existing database if it exists
+# cursor.execute("DROP DATABASE IF EXISTS PdfDatabase")
+
+# # Create the database
+# cursor.execute("CREATE DATABASE PdfDatabase")
+
+# # Creating the table
+# create_table_query = """
+# CREATE TABLE IF NOT EXISTS PdfDatabase.issuer_ratings (
+#     id INT AUTO_INCREMENT PRIMARY KEY,
+#     name_of_issuer VARCHAR(255),
+#     subtype_instrument_type VARCHAR(255),
+#     amount DECIMAL(15, 2),
+#     rating VARCHAR(255),
+#     industry_name VARCHAR(255),
+#     basic_industry VARCHAR(255)
+# )
+# """
+
+# cursor.execute(create_table_query)
+
+# # Inserting data into the table
+# insert_data_query = """
+# INSERT INTO PdfDatabase.issuer_ratings (name_of_issuer, subtype_instrument_type, amount, rating, industry_name, basic_industry)
+# VALUES (%s, %s, %s, %s, %s, %s)
+# """
+
+# # Converting DataFrame to list of tuples
+# data_to_insert = df.to_records(index=False).tolist()
+# print("Data to insert:", data_to_insert)
+
+# # Executing the insert query
+# cursor.executemany(insert_data_query, data_to_insert)
+
+# # Committing the transaction
+# connection.commit()
+
+# # Closing the connection
+# cursor.close()
+# connection.close()
+
+# print("Data inserted successfully")
+
 import fitz  # PyMuPDF
 import pandas as pd
-import re
-import mysql.connector
+import camelot
+from tabulate import tabulate
 
 # Open the PDF file
 pdf_document = "pdffile.pdf"
@@ -403,83 +501,16 @@ def extract_text_from_first_page(doc):
 
 # Extract text from the first page
 pdf_text = extract_text_from_first_page(document)
-print("Extracted text from PDF:", pdf_text)
 
-# Extract the tabular data using regular expressions
-def extract_table_data(text):
-    pattern = re.compile(r"(\d+.*\n)+")
-    matches = pattern.findall(text)
-    print("Matches found:", matches)
-    data = [match.split() for match in matches]
-    return data
+# Extract tables using Camelot
+tables = camelot.read_pdf(pdf_document, flavor='stream')
 
-# Process the extracted text
-data = extract_table_data(pdf_text)
-print("Processed data:", data)
+# Check if tables were extracted
+if tables:
+    # Assume the first table contains the data
+    df = tables[0].df
 
-# Convert the processed data into a DataFrame
-columns = ["Name of Issuer", "Subtype Instrument Type", "Amount (Rs.Mn)", "Rating", "Industry Name", "Basic Industry"]
-df = pd.DataFrame(data, columns=columns)
-print("DataFrame:")
-print(df.head())
-
-# Remove any rows where 'Amount (Rs.Mn)' is not a numeric value
-df = df[pd.to_numeric(df['Amount (Rs.Mn)'], errors='coerce').notnull()]
-
-# Convert 'Amount (Rs.Mn)' to numeric
-df['Amount (Rs.Mn)'] = pd.to_numeric(df['Amount (Rs.Mn)'])
-
-# MySQL database connection details
-db_config = {
-    'user': 'root',
-    'password': 'jaygajjar',
-    'host': '127.0.0.1',
-    'raise_on_warnings': True
-}
-
-# Establishing a connection to the database
-connection = mysql.connector.connect(**db_config)
-cursor = connection.cursor()
-
-# Drop the existing database if it exists
-cursor.execute("DROP DATABASE IF EXISTS PdfDatabase")
-
-# Create the database
-cursor.execute("CREATE DATABASE PdfDatabase")
-
-# Creating the table
-create_table_query = """
-CREATE TABLE IF NOT EXISTS PdfDatabase.issuer_ratings (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name_of_issuer VARCHAR(255),
-    subtype_instrument_type VARCHAR(255),
-    amount DECIMAL(15, 2),
-    rating VARCHAR(255),
-    industry_name VARCHAR(255),
-    basic_industry VARCHAR(255)
-)
-"""
-
-cursor.execute(create_table_query)
-
-# Inserting data into the table
-insert_data_query = """
-INSERT INTO PdfDatabase.issuer_ratings (name_of_issuer, subtype_instrument_type, amount, rating, industry_name, basic_industry)
-VALUES (%s, %s, %s, %s, %s, %s)
-"""
-
-# Converting DataFrame to list of tuples
-data_to_insert = df.to_records(index=False).tolist()
-print("Data to insert:", data_to_insert)
-
-# Executing the insert query
-cursor.executemany(insert_data_query, data_to_insert)
-
-# Committing the transaction
-connection.commit()
-
-# Closing the connection
-cursor.close()
-connection.close()
-
-print("Data inserted successfully")
+    # Print the DataFrame
+    print(tabulate(df, headers='keys', tablefmt='pretty'))
+else:
+    print("No tables found in the PDF.")

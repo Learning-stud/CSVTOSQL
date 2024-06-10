@@ -386,103 +386,103 @@
 
 # print("Data inserted successfully")
 
-import fitz  # PyMuPDF
-import pandas as pd
-import re
-import mysql.connector
+# import fitz  # PyMuPDF
+# import pandas as pd
+# import re
+# import mysql.connector
 
-# Open the PDF file
-pdf_document = "pdffile.pdf"
-document = fitz.open(pdf_document)
+# # Open the PDF file
+# pdf_document = "pdffile.pdf"
+# document = fitz.open(pdf_document)
 
-# Function to extract text from the PDF
-def extract_text_from_first_page(doc):
-    page = doc.load_page(0)  # Loads the first page
-    text = page.get_text("text")
-    return text
+# # Function to extract text from the PDF
+# def extract_text_from_first_page(doc):
+#     page = doc.load_page(0)  # Loads the first page
+#     text = page.get_text("text")
+#     return text
 
-# Extract text from the first page
-pdf_text = extract_text_from_first_page(document)
-print("Extracted text from PDF:", pdf_text)
+# # Extract text from the first page
+# pdf_text = extract_text_from_first_page(document)
+# print("Extracted text from PDF:", pdf_text)
 
-# Extract the tabular data using regular expressions
-def extract_table_data(text):
-    pattern = re.compile(r"(\d+.*\n)+")
-    matches = pattern.findall(text)
-    print("Matches found:", matches)
-    data = [match.split() for match in matches]
-    return data
+# # Extract the tabular data using regular expressions
+# def extract_table_data(text):
+#     pattern = re.compile(r"(\d+.*\n)+")
+#     matches = pattern.findall(text)
+#     print("Matches found:", matches)
+#     data = [match.split() for match in matches]
+#     return data
 
-# Process the extracted text
-data = extract_table_data(pdf_text)
-print("Processed data:", data)
+# # Process the extracted text
+# data = extract_table_data(pdf_text)
+# print("Processed data:", data)
 
-# Convert the processed data into a DataFrame
-columns = ["Name of Issuer", "Subtype Instrument Type", "Amount (Rs.Mn)", "Rating", "Industry Name", "Basic Industry"]
-df = pd.DataFrame(data, columns=columns)
-print("DataFrame:")
-print(df.head())
+# # Convert the processed data into a DataFrame
+# columns = ["Name of Issuer", "Subtype Instrument Type", "Amount (Rs.Mn)", "Rating", "Industry Name", "Basic Industry"]
+# df = pd.DataFrame(data, columns=columns)
+# print("DataFrame:")
+# print(df.head())
 
-# Remove any rows where 'Amount (Rs.Mn)' is not a numeric value
-df = df[pd.to_numeric(df['Amount (Rs.Mn)'], errors='coerce').notnull()]
+# # Remove any rows where 'Amount (Rs.Mn)' is not a numeric value
+# df = df[pd.to_numeric(df['Amount (Rs.Mn)'], errors='coerce').notnull()]
 
-# Convert 'Amount (Rs.Mn)' to numeric
-df['Amount (Rs.Mn)'] = pd.to_numeric(df['Amount (Rs.Mn)'])
+# # Convert 'Amount (Rs.Mn)' to numeric
+# df['Amount (Rs.Mn)'] = pd.to_numeric(df['Amount (Rs.Mn)'])
 
-# MySQL database connection details
-db_config = {
-    'user': 'root',
-    'password': 'jaygajjar',
-    'host': '127.0.0.1',
-    'raise_on_warnings': True
-}
+# # MySQL database connection details
+# db_config = {
+#     'user': 'root',
+#     'password': 'jaygajjar',
+#     'host': '127.0.0.1',
+#     'raise_on_warnings': True
+# }
 
-# Establishing a connection to the database
-connection = mysql.connector.connect(**db_config)
-cursor = connection.cursor()
+# # Establishing a connection to the database
+# connection = mysql.connector.connect(**db_config)
+# cursor = connection.cursor()
 
-# Drop the existing database if it exists
-cursor.execute("DROP DATABASE IF EXISTS PdfDatabase")
+# # Drop the existing database if it exists
+# cursor.execute("DROP DATABASE IF EXISTS PdfDatabase")
 
-# Create the database
-cursor.execute("CREATE DATABASE PdfDatabase")
+# # Create the database
+# cursor.execute("CREATE DATABASE PdfDatabase")
 
-# Creating the table
-create_table_query = """
-CREATE TABLE IF NOT EXISTS PdfDatabase.issuer_ratings (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name_of_issuer VARCHAR(255),
-    subtype_instrument_type VARCHAR(255),
-    amount DECIMAL(15, 2),
-    rating VARCHAR(255),
-    industry_name VARCHAR(255),
-    basic_industry VARCHAR(255)
-)
-"""
+# # Creating the table
+# create_table_query = """
+# CREATE TABLE IF NOT EXISTS PdfDatabase.issuer_ratings (
+#     id INT AUTO_INCREMENT PRIMARY KEY,
+#     name_of_issuer VARCHAR(255),
+#     subtype_instrument_type VARCHAR(255),
+#     amount DECIMAL(15, 2),
+#     rating VARCHAR(255),
+#     industry_name VARCHAR(255),
+#     basic_industry VARCHAR(255)
+# )
+# """
 
-cursor.execute(create_table_query)
+# cursor.execute(create_table_query)
 
-# Inserting data into the table
-insert_data_query = """
-INSERT INTO PdfDatabase.issuer_ratings (name_of_issuer, subtype_instrument_type, amount, rating, industry_name, basic_industry)
-VALUES (%s, %s, %s, %s, %s, %s)
-"""
+# # Inserting data into the table
+# insert_data_query = """
+# INSERT INTO PdfDatabase.issuer_ratings (name_of_issuer, subtype_instrument_type, amount, rating, industry_name, basic_industry)
+# VALUES (%s, %s, %s, %s, %s, %s)
+# """
 
-# Converting DataFrame to list of tuples
-data_to_insert = df.to_records(index=False).tolist()
-print("Data to insert:", data_to_insert)
+# # Converting DataFrame to list of tuples
+# data_to_insert = df.to_records(index=False).tolist()
+# print("Data to insert:", data_to_insert)
 
-# Executing the insert query
-cursor.executemany(insert_data_query, data_to_insert)
+# # Executing the insert query
+# cursor.executemany(insert_data_query, data_to_insert)
 
-# Committing the transaction
-connection.commit()
+# # Committing the transaction
+# connection.commit()
 
-# Closing the connection
-cursor.close()
-connection.close()
+# # Closing the connection
+# cursor.close()
+# connection.close()
 
-print("Data inserted successfully")
+# print("Data inserted successfully")
 
 # import fitz  # PyMuPDF
 # import pandas as pd
@@ -514,3 +514,31 @@ print("Data inserted successfully")
 #     print(tabulate(df, headers='keys', tablefmt='pretty'))
 # else:
 #     print("No tables found in the PDF.")
+import json
+import csv
+
+# Load JSON data from the file
+with open('pdffile.json') as json_file:
+    data = json.load(json_file)
+
+# Open a CSV file for writing
+with open('rating_reckoner.csv', mode='w', newline='') as csv_file:
+    csv_writer = csv.writer(csv_file)
+
+    # Write the header row
+    csv_writer.writerow([
+        "NAME OF ISSUER", "SUB TYPE", "INSTRUMENT TYPE", "AMOUNT (Rs.Mn)",
+        "RATING", "INDUSTRY NAME", "BASIC INDUSTRY"
+    ])
+
+    # Iterate through the pages and write the rows
+    for page in data['pages']:
+        if 'content' in page:
+            lines = page['content'].split('\n')
+            for line in lines:
+                columns = line.split()
+                # Check if the row has the right number of columns
+                if len(columns) == 7:
+                    csv_writer.writerow(columns)
+
+print("CSV file 'rating_reckoner.csv' has been created.")

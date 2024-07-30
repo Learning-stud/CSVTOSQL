@@ -315,7 +315,7 @@ def fetch_and_display_data():
     db.close()
 
 if __name__ == "__main__":
-    json_path = 'pdffile.json'  # Update this to the correct path if needed
+    json_path = 'pdffile.json'  
     data = load_data_from_json(json_path)
     if data:  # Only insert data if it's non-empty
         insert_data_to_mysql(data)

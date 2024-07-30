@@ -1,4 +1,4 @@
-import fitz  # PyMuPDF
+import fitz 
 import json
 
 # Function to extract text from PDF
